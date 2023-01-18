@@ -51,6 +51,8 @@
     <dimen name="toolbar_detail_icon_height_width">30dp</dimen>
     <dimen name="toolbar_bookmark_width_height">32dp</dimen>
     <dimen name="detail_banner_height">200dp</dimen>
+    <dimen name="chip_corner_radius">5dp</dimen>
+
 
 
 </resources>

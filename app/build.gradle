@@ -93,7 +93,7 @@ dependencies {
     implementation "androidx.fragment:fragment-ktx:1.5.5"
 
     // Canary Leak, to detact memory leaks
-    debugImplementation "com.squareup.leakcanary:leakcanary-android:2.7"
+//    debugImplementation "com.squareup.leakcanary:leakcanary-android:2.7"
 
     // Only needed for RedditVideoDataRepository
     implementation "com.squareup.retrofit2:retrofit:2.9.0"
@@ -125,6 +125,9 @@ dependencies {
 
     //Mobile ads
     implementation 'com.google.android.gms:play-services-ads:21.4.0'
+    // Exo player UI
+    implementation 'com.google.android.exoplayer:exoplayer-ui:2.18.2'
+    implementation 'com.google.android.exoplayer:exoplayer-core:2.18.2'
 
 }
 

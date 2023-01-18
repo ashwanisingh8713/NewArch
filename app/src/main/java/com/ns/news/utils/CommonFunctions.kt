@@ -1,26 +1,15 @@
 package com.ns.news.utils
 
 import android.app.Activity
-import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
-import android.os.Build
-import android.util.Log
 import android.view.View
-import android.view.Window
-import android.view.animation.Animation
-import android.view.animation.OvershootInterpolator
-import android.view.animation.TranslateAnimation
-import android.widget.Button
-import android.widget.ImageView
-import android.widget.TextView
 import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.startActivity
 import androidx.core.view.ViewCompat
-import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.chip.Chip
 import com.google.android.material.snackbar.Snackbar
 import com.ns.news.R
 
@@ -66,7 +55,17 @@ class CommonFunctions {
             return splitBy.toMutableList()
         }
 
+         fun createTagChip(context: Context, chipName: String, chipId:String): Chip {
+            return Chip(context).apply {
+                text = "# ${chipName}"
+                setChipBackgroundColorResource(R.color.chip_background_color)
+                setBackgroundResource(R.drawable.chip_background)
+                isCloseIconVisible = true
+                setTextColor(ContextCompat.getColor(context, R.color.black))
+                id = chipId.toInt()
+            }
 
+        }
     }
 
 }

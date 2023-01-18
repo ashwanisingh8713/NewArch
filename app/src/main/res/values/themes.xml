@@ -48,5 +48,10 @@
         <item name="android:textColorSecondary">@color/bottom_manu_inactive</item>
         <item name="android:textSize">14sp</item>
     </style>
+    <style name="ChipCustomStyle" parent="Widget.MaterialComponents.Chip.Action">
+        <item name="checkedIconEnabled">false</item>
+        <item name="checkedIcon">@null</item>
+    </style>
+
 
 </resources>

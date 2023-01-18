@@ -254,10 +254,11 @@
         <com.google.android.material.chip.ChipGroup
             android:id="@+id/topics_chips"
             android:layout_width="0dp"
-            android:layout_height="@dimen/_100sdp"
+            android:layout_height="wrap_content"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="@id/topics"
-            app:layout_constraintTop_toBottomOf="@id/topics" />
+            app:layout_constraintTop_toBottomOf="@id/topics"
+            app:singleLine="false"/>
 
         <androidx.cardview.widget.CardView
             android:id="@+id/different_news_card"

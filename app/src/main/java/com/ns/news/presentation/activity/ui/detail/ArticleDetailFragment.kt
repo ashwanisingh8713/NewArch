@@ -73,6 +73,7 @@ class ArticleDetailFragment : Fragment() {
         loadDescriptionPart4()
         loadBannerAds1()
         loadBannerAds2()
+        loadTopics()
     }
 
     override fun onPause() {
@@ -144,7 +145,9 @@ class ArticleDetailFragment : Fragment() {
     }
 
     private fun loadTopics() {
-
+        item.tags.forEach { tagItem ->
+            binding.topicsChips.addView(CommonFunctions.createTagChip(requireActivity(),tagItem.name, tagItem.id))
+        }
     }
 
     private fun loadNextStory() {

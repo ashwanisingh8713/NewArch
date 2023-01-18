@@ -2,10 +2,10 @@ package com.ns.news.presentation.activity.ui.launch
 
 import androidx.fragment.app.Fragment
 import androidx.viewpager2.adapter.FragmentStateAdapter
-import com.ns.news.presentation.activity.ui.dashboard.DashboardFragment
+import com.ns.news.presentation.activity.ui.dashboard.PhotoTabFragment
 import com.ns.news.presentation.activity.ui.home.HomeTabFragment
-import com.ns.news.presentation.activity.ui.notifications.NotificationsFragment
-import com.ns.news.presentation.activity.ui.more.MoreFragment
+import com.ns.news.presentation.activity.ui.notifications.VideoTabFragment
+import com.ns.news.presentation.activity.ui.more.PodcastTabFragment
 
 
 /**
@@ -20,9 +20,9 @@ class LaunchNavPagerAdapter(fragment: Fragment) : FragmentStateAdapter(fragment)
     override fun createFragment(position: Int): Fragment {
         return when(position) {
             0-> HomeTabFragment()
-            1-> DashboardFragment()
-            2-> NotificationsFragment()
-            3-> MoreFragment()
+            1-> PhotoTabFragment()
+            2-> VideoTabFragment()
+            3-> PodcastTabFragment()
             else -> HomeTabFragment()
 
         }
