@@ -1,8 +1,13 @@
 package com.videopager.ui
 
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.net.Uri
 import android.util.Log
+import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.startActivity
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -16,6 +21,7 @@ import com.videopager.models.AnimationEffect
 import com.videopager.models.PageEffect
 import com.videopager.models.ResetAnimationsEffect
 import com.videopager.ui.extensions.*
+
 
 internal class PageViewHolder(
     val binding: PageItemBinding,
@@ -70,6 +76,20 @@ internal class PageViewHolder(
             binding.save.setColorFilter(ContextCompat.getColor(binding.save.context, R.color.red))
         } else {
             binding.save.setColorFilter(ContextCompat.getColor(binding.save.context, R.color.white))
+        }
+
+        // Video Source Click
+        binding.videoSource.setOnClickListener{
+            try {
+                val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(videoData.mediaUri))
+                binding.root.context.startActivity(browserIntent)
+            } catch (e: ActivityNotFoundException) {
+                Toast.makeText(
+                    binding.root.context, "No application can handle this request."
+                            + " Please install a Browser", Toast.LENGTH_LONG
+                ).show()
+                e.printStackTrace()
+            }
         }
 
         ConstraintSet().apply {

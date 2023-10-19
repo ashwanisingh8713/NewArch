@@ -4,13 +4,15 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.View.OnTouchListener
 import android.view.WindowManager
+import android.view.animation.AccelerateDecelerateInterpolator
+import android.view.animation.Animation
+import android.view.animation.Animation.AnimationListener
+import android.view.animation.TranslateAnimation
 import android.widget.SeekBar
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -31,7 +33,6 @@ import com.ns.shortsnews.data.repository.UserDataRepositoryImpl
 import com.ns.shortsnews.data.repository.VideoCategoryRepositoryImp
 import com.ns.shortsnews.databinding.ActivityMainBinding
 import com.ns.shortsnews.domain.connectivity.isOnline
-import com.ns.shortsnews.domain.usecase.channel.ChannelInfoUseCase
 import com.ns.shortsnews.domain.usecase.followunfollow.FollowUnfollowUseCase
 import com.ns.shortsnews.domain.usecase.video_category.UpdateVideoCategoriesUseCase
 import com.ns.shortsnews.domain.usecase.video_category.VideoCategoryUseCase
@@ -48,13 +49,14 @@ import com.videopager.utils.NoConnection
 import com.videopager.vm.SharedEventViewModelFactory
 import com.videopager.vm.VideoSharedEventViewModel
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.get
 
@@ -171,6 +173,7 @@ class MainActivity : AppCompatActivity(), onProfileItemClick {
             AppPreference.isUserLoggedIn,
             AppPreference.userToken
         )
+
     }
 
     override fun onPause() {
@@ -220,8 +223,9 @@ class MainActivity : AppCompatActivity(), onProfileItemClick {
      */
     override fun itemclick(requiredId: String, position: Int, size: Int) {
         if (NetworkXProvider.isInternetConnected) {
-            bottomSheetClearChannelId()
-            getSelectedLanguagesValuesOnClick(requiredId)
+            slideDown(binding.persistentBottomsheet.bottomSheetHeader, 300, requiredId)
+//            bottomSheetClearChannelId(requiredId)
+//            getSelectedLanguagesValuesOnClick(requiredId)
         } else {
             // No Internet Snackbar: Fire
             NoConnection.noConnectionSnackBarInfinite(binding.root, this@MainActivity)
@@ -460,17 +464,59 @@ class MainActivity : AppCompatActivity(), onProfileItemClick {
                 }
             }
         })
+    }
+
+    private fun slideUp(view: View, duration: Long) {
+        view.visibility = View.VISIBLE
+        val animate = TranslateAnimation(0f, 0f, view.height.toFloat(), 0f)
+        animate.duration = duration
+        animate.interpolator = AccelerateDecelerateInterpolator()
+        animate.setAnimationListener(object : AnimationListener {
+            override fun onAnimationStart(animation: Animation?) {
+
+            }
+
+            override fun onAnimationEnd(animation: Animation?) {
+                view.visibility = View.VISIBLE
+                binding.persistentBottomsheet.channelContainer.visibility = View.VISIBLE
+            }
+
+            override fun onAnimationRepeat(animation: Animation?) {
+
+            }
+
+        })
+        view.startAnimation(animate)
+    }
+
+    private fun slideDown(view: View, duration: Long, requiredId: String) {
+        val animate = TranslateAnimation(0f, 0f, 0f, view.height.toFloat())
+        animate.duration = duration
+        animate.interpolator = AccelerateDecelerateInterpolator()
+        animate.setAnimationListener(object : AnimationListener {
+            override fun onAnimationStart(animation: Animation?) {
+                hideSeekbar()
+            }
+
+            override fun onAnimationEnd(animation: Animation?) {
+                view.visibility = View.GONE
+                binding.persistentBottomsheet.channelContainer.visibility = View.GONE
+                loadHomeFragment(requiredId)
+                sharedEventViewModel.sendUserPreferenceData(
+                    AppPreference.isUserLoggedIn,
+                    AppPreference.userToken
+                )
+            }
+
+            override fun onAnimationRepeat(animation: Animation?) {
+
+            }
+
+        })
+        view.startAnimation(animate)
 
     }
 
-    private fun bottomSheetHeaderViewsShowHide(show: Boolean) {
-        val showHide = if (show) View.VISIBLE else View.GONE
-        binding.persistentBottomsheet.following.visibility = showHide
-        binding.persistentBottomsheet.clientImage.visibility = showHide
-        binding.persistentBottomsheet.cardViewClientImage.visibility = showHide
-        binding.persistentBottomsheet.progressBar.visibility = showHide
-        binding.persistentBottomsheet.imgDownArrow.visibility = showHide
-    }
 
     // Bottom Sheet Image Arrow CLick Listener to OPEN or CLOSE Drawer
     fun bottomSheetArrowBtnClick() {
@@ -479,9 +525,6 @@ class MainActivity : AppCompatActivity(), onProfileItemClick {
                 standardBottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
             } else {
                 if (NetworkXProvider.isInternetConnected) {
-
-//                    channelInfoViewModel.clearChannelInfo()
-
                     val videoInfoData = binding.persistentBottomsheet.imgDownArrow.tag
                     videoInfoData?.let {
                         val videoInfo = videoInfoData as VideoInfoData
@@ -490,7 +533,6 @@ class MainActivity : AppCompatActivity(), onProfileItemClick {
                             binding.persistentBottomsheet.progressBar.visibility = View.VISIBLE
                             binding.persistentBottomsheet.imgDownArrow.visibility = View.GONE
                             Log.i("HeaderBg", "MainActivity :: Make Request to get all videos of ChannelId = $channelId")
-//                            channelInfoViewModel.requestChannelInfoApi(channelId)
                             openBottomSheetChannelVideoData(videoInfoData = videoInfo)
                         }
                     }
@@ -502,12 +544,12 @@ class MainActivity : AppCompatActivity(), onProfileItemClick {
     }
 
 
-    private var progressBarJob: Job? = null
+    private var enableImgDownArrowJob: Job? = null
     private fun enableImgDownArrowClick() {
         binding.persistentBottomsheet.imgDownArrow.isEnabled = false
-        progressBarJob?.cancel()
-        progressBarJob = lifecycleScope.launch {
-            delay(1000)
+        enableImgDownArrowJob?.cancel()
+        enableImgDownArrowJob = lifecycleScope.launch {
+            delay(700)
             binding.persistentBottomsheet.imgDownArrow.isEnabled = true
         }
     }
@@ -517,8 +559,15 @@ class MainActivity : AppCompatActivity(), onProfileItemClick {
         // Get Video Info from VideoPagerFragment
         lifecycleScope.launch {
             sharedEventViewModel.sharedVideoInfo.filterNotNull().collectLatest {
+                // To delay the click of bottom sheet arrow, because without delay color is getting
+                // mismatched for some channels when clicked fast at the time of video fast swipe
                 enableImgDownArrowClick()
+
+
                 bottomSheetHeaderViewsShowHide(true)
+                if(binding.persistentBottomsheet.bottomSheetHeader.visibility == View.GONE) {
+                    slideUp(binding.persistentBottomsheet.bottomSheetHeader, 500)
+                }
 
                     if (it.following) {
                         binding.persistentBottomsheet.following.text = getString(R.string.following)
@@ -616,6 +665,16 @@ class MainActivity : AppCompatActivity(), onProfileItemClick {
 
         // To hide seekbar when bottom sheet is started to open
         hideSeekbar()
+    }
+
+    private fun bottomSheetHeaderViewsShowHide(show: Boolean) {
+        val showHide = if (show) View.VISIBLE else View.GONE
+        binding.persistentBottomsheet.bottomSheetHeader.visibility = showHide
+        if(show) {
+            showSeekbar()
+        } else {
+            hideSeekbar()
+        }
     }
 
     @SuppressLint("ResourceAsColor")
