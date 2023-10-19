@@ -22,7 +22,6 @@ class VideoDataRepositoryImpl(private val userApiService: UserApiService) : Vide
 
     override suspend fun videoData(
         id: String,
-        context: Context,
         videoFrom: String, page: Int, perPage: Int,languages:String,
     ): Flow<MutableList<VideoData>> {
         var ll = mutableListOf<MutableList<VideoData>>()
@@ -81,7 +80,7 @@ class VideoDataRepositoryImpl(private val userApiService: UserApiService) : Vide
                             videoUrls[index] = post.videoUrl
                             videoIds[index] = post.id.toString()
                         }
-                        Log.i("RequestTT","Id = ${post.id}, MediaUri = ${post.videoUrl}")
+//                        Log.i("RequestTT","Id = ${post.id}, MediaUri = ${post.videoUrl}")
                         VideoData(
                             id = post.id,
                             mediaUri = post.videoUrl,
@@ -100,11 +99,12 @@ class VideoDataRepositoryImpl(private val userApiService: UserApiService) : Vide
                 // Preload Video urls
                 HlsBulkPreloadCoroutine.schedulePreloadWork(videoUrls, videoIds)
 
-                Log.i("Conv_TIME", "VideoDataRepositoryImpl")
+                Log.i("AshwaniXYZ", "VideoDataRepositoryImpl videoData Size = ${videoData.size}")
 
                 ll.add(videoData as MutableList)
                 ll
             } catch (e: Exception) {
+                Log.i("RequestTT","Exception = $e")
                 if(e is HttpException) {
                     val httpCode = e.code()
                     if(httpCode == 401) {

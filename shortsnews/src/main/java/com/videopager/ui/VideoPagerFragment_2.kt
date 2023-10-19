@@ -130,7 +130,6 @@ class VideoPagerFragment_2 : Fragment(R.layout.video_pager_fragment) {
 
         val appPlayerView =  ExoAppPlayerViewFactory().create(requireContext())
 
-        viewModel.setVMContext(requireContext())
         viewModel.setPlayerVieww(appPlayerView.getPlayerView())
 
         binding = VideoPagerFragmentBinding.bind(view)
@@ -290,10 +289,15 @@ class VideoPagerFragment_2 : Fragment(R.layout.video_pager_fragment) {
         }
 
 
-
+        viewModel.setFragmenttt(this)
 
     }
 
+    override fun onPause() {
+        super.onPause()
+        Log.d("AshwaniPerformance", "VideoPagerFragment onPause()")
+        viewModel.pausePlayer()
+    }
 
     override fun onResume() {
         super.onResume()
@@ -303,7 +307,17 @@ class VideoPagerFragment_2 : Fragment(R.layout.video_pager_fragment) {
             viewModel.processEvent(VideoInfoEvent(data.id, binding.viewPager.currentItem))
         }
 
+        if(isVisible) {
+            viewModel.playerView?.player?.play()
+        } else {
+            viewModel.playerView?.player?.pause()
+        }
+
         Log.d("AshwaniPerformance", "VideoPagerFragment onResume()")
+    }
+
+    fun isVideoPagerFragmentVisible(): Boolean {
+        return isVisible
     }
 
     private fun Lifecycle.viewEvents(): Flow<ViewEvent> {

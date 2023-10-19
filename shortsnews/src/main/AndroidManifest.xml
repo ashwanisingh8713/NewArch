@@ -33,7 +33,7 @@
         tools:replace="android:allowBackup"
         android:dataExtractionRules="@xml/data_extraction_rules"
         tools:ignore="DataExtractionRules">
-        <activity
+        <!--<activity
             android:name=".LauncherActivity"
             android:exported="true"
             android:screenOrientation="portrait"
@@ -42,7 +42,20 @@
             >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>-->
 
+        <activity
+            android:name="com.tab.MainTabActivity"
+            android:configChanges="uiMode"
+            android:exported="true"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.News"
+            android:windowSoftInputMode="adjustPan">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -75,8 +88,8 @@
             android:screenOrientation="portrait"
             android:theme="@style/Theme.News"
             android:windowSoftInputMode="adjustPan">
-
         </activity>
+
         <activity
             android:name=".PlainVideoActivity"
             android:configChanges="uiMode"

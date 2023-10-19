@@ -32,6 +32,7 @@ import com.videopager.models.TearDownPlayerResult
 import com.videopager.models.ViewEffect
 import com.videopager.models.ViewEvent
 import com.videopager.models.ViewResult
+import com.videopager.ui.VideoPagerFragment_2
 import com.videopager.ui.extensions.ViewState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
@@ -54,29 +55,17 @@ internal class VideoPagerViewModel(
 
 
 
-//    var page = 1
-//    private set
-
-//    private var pager: ViewPager2? = null
-//    private fun setPager(pager: ViewPager2) {
-//        this.pager = pager
-//    }
-
-    private var _videoProgressBarEvent= MutableSharedFlow<Int>()
-    val videoProgressBar = _videoProgressBarEvent.asSharedFlow()
-
     fun videoProgressBarEvent(playBackState: Int) {
         viewModelScope.launch {
             Log.d("AshwaniPerformance", "VideoPagerViewModel playBackState :: $playBackState")
-            _videoProgressBarEvent.emit(playBackState)
         }
     }
 
 
-    var context: Context? = null
-    fun setVMContext(context: Context) {
-        this.context = context
-    }
+//    var context: Context? = null
+//    fun setVMContext(context: Context) {
+//        this.context = context
+//    }
 
     var playerView: StyledPlayerView? = null
     fun setPlayerVieww(playerView: StyledPlayerView?) {
@@ -116,7 +105,6 @@ internal class VideoPagerViewModel(
             filterIsInstance<PostClickCommentEvent>().toPostCommentResults(),
             filterIsInstance<VideoInfoEvent>().toVideoInfoResults(),
             filterIsInstance<BookmarkClickEvent>().toSaveClickResult(),
-//            filterIsInstance<NotificationVideoPlayerSettleEvent>().toNotificationClickResult(),
         )
     }
 
@@ -126,16 +114,12 @@ internal class VideoPagerViewModel(
         return flatMapLatest { event ->
             repository.videoData(
                 requiredId = event.categoryId,
-                context = context!!,
                 videoFrom = event.videoFrom,
                 page = event.page,
                 perPage = perPage,
                 languages = languages
             )
         }.map { videoData ->
-            /*if (page == 1) {
-                delay(1000)
-            }*/
             val appPlayer = states.value.appPlayer
 
             // If the player exists, it should be updated with the latest video data that came in
@@ -257,10 +241,17 @@ internal class VideoPagerViewModel(
                 Log.i("videoProgress", "createPlayer() onMediaItemTransition :: $it")
                 MediaItemTransitionResult(it)
             },
-            appPlayer.onPlaybackStateChanged().mapLatest {
+            appPlayer.onPlaybackStateChanged().mapLatest { it ->
                 Log.i("videoProgress", "createPlayer() onPlaybackStateChanged :: $it")
                 if(it==3) { // Stat is Playing
-                    appPlayer.play()
+
+                    fragment?.let {
+                        if(it.isVisible) {
+                            appPlayer.play()
+                        }
+                    }
+
+
                     NoOpResult
                 } else {
                     NoOpResult
@@ -270,6 +261,13 @@ internal class VideoPagerViewModel(
             }
         )
     }
+
+    var fragment: VideoPagerFragment_2? = null
+
+    fun setFragmenttt(fragment: VideoPagerFragment_2) {
+        this.fragment = fragment
+    }
+
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private suspend fun resumePlayer(): Flow<ViewResult> {
